@@ -1,4 +1,6 @@
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.BreakIterator;
 import java.util.Scanner;
@@ -16,9 +18,19 @@ public class WordWrapper {
 	 * @param iOutputFilePath
 	 */
 	public void wrapFile(final String iInputFilePath, final String iOutputFilePath) {
-		try{
-			final Scanner aLineScanner = new Scanner(new File(iInputFilePath));
-			final PrintWriter aFileWriter = new PrintWriter(new File(iOutputFilePath));
+		try {
+			final File aInputFile = new File(iInputFilePath);
+			if (!aInputFile.exists()) {
+				System.err.println(String.format("File with path [%s] doesn't exists", iInputFilePath));
+				System.exit(1);
+			}
+			final Scanner aLineScanner = new Scanner(aInputFile);
+			final File aOutputFile = new File(iOutputFilePath);
+			if (!aOutputFile.createNewFile()) {
+				System.err.println(String.format("File with path [%s] doesn't exists", iOutputFilePath));
+				System.exit(1);
+			}
+			final PrintWriter aFileWriter = new PrintWriter(aOutputFile);
 			// Not caring about thread safety. 
 			final StringBuilder aOutputStringBuilder = new StringBuilder();
 			String line ;
@@ -40,10 +52,13 @@ public class WordWrapper {
 			aFileWriter.write(aOutputStringBuilder.toString());
 			aFileWriter.close();
 			aLineScanner.close();
-		}
-		catch (Exception ex) {
-			System.err.println("Oops! Something went wrong");
-		}
+		} 
+		catch (FileNotFoundException e) {
+			System.err.println(String.format("Input file read/output file write failed."));
+		} 
+		catch (IOException e) {
+			System.err.println(String.format("Error occurred while creating an output file."));
+		}	
 	}
 	
 	/**
